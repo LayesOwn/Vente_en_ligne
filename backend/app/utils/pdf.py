@@ -82,7 +82,7 @@ def generate_invoice_pdf(order) -> bytes:
 
     # ── En-tête ────────────────────────────────────────────────────────────────
     elements.append(Paragraph("DASHA SHOP", title_style))
-    elements.append(Paragraph("Mode Féminine & Accessoires de Luxe", subtitle_style))
+    elements.append(Paragraph("Mode & Accessoires", subtitle_style))
     elements.append(HRFlowable(width="100%", thickness=2, color=ROSE_POWDER))
     elements.append(Spacer(1, 0.5 * cm))
 
@@ -185,7 +185,7 @@ def generate_invoice_pdf(order) -> bytes:
     elements.append(HRFlowable(width="100%", thickness=0.5, color=GRAY_MEDIUM))
     elements.append(Spacer(1, 0.3 * cm))
     elements.append(Paragraph(
-        "Merci pour votre confiance — DASHA SHOP | Mode Féminine & Accessoires de Luxe",
+        "Merci pour votre confiance — DASHA SHOP | Mode & Accessoires",
         footer_style,
     ))
 

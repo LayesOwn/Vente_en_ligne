@@ -65,11 +65,11 @@ export default function Home() {
             <h1 className="text-5xl md:text-6xl font-serif font-normal leading-tight text-dasha-black mb-6">
               L'Élégance
               <br />
-              au Féminin
+              à votre image
             </h1>
             <p className="text-lg text-dasha-gray leading-relaxed mb-10 max-w-md">
               Découvrez une sélection exclusive de vêtements, chaussures, sacs et
-              bijoux pensés pour la femme moderne et raffinée.
+              bijoux pour tous les styles.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link to="/produits" className="btn-primary flex items-center justify-center gap-2">

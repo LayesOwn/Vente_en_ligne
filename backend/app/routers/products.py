@@ -5,6 +5,7 @@ from typing import List, Optional
 from ..database import get_db
 from ..models import Product
 from ..schemas import ProductOut, ProductCreate, ProductUpdate
+from ..utils.auth import get_current_admin
 
 router = APIRouter(prefix="/api/products", tags=["products"])
 
@@ -45,7 +46,7 @@ def get_product(product_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=ProductOut, status_code=201)
-def create_product(product: ProductCreate, db: Session = Depends(get_db)):
+def create_product(product: ProductCreate, db: Session = Depends(get_db), _: str = Depends(get_current_admin)):
     db_product = Product(**product.model_dump())
     db.add(db_product)
     db.commit()
@@ -54,7 +55,7 @@ def create_product(product: ProductCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/{product_id}", response_model=ProductOut)
-def update_product(product_id: int, product: ProductUpdate, db: Session = Depends(get_db)):
+def update_product(product_id: int, product: ProductUpdate, db: Session = Depends(get_db), _: str = Depends(get_current_admin)):
     db_product = db.query(Product).filter(Product.id == product_id).first()
     if not db_product:
         raise HTTPException(status_code=404, detail="Produit introuvable")
@@ -69,7 +70,7 @@ def update_product(product_id: int, product: ProductUpdate, db: Session = Depend
 
 
 @router.delete("/{product_id}", status_code=204)
-def delete_product(product_id: int, db: Session = Depends(get_db)):
+def delete_product(product_id: int, db: Session = Depends(get_db), _: str = Depends(get_current_admin)):
     db_product = db.query(Product).filter(Product.id == product_id).first()
     if not db_product:
         raise HTTPException(status_code=404, detail="Produit introuvable")

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, Body
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 import os
@@ -8,14 +8,23 @@ import aiofiles
 from ..database import get_db
 from ..models import Order, Product
 from ..schemas import StatsOut
+from ..utils.auth import create_access_token, get_current_admin
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
 
 
+@router.post("/login")
+def login(password: str = Body(..., embed=True)):
+    admin_password = os.getenv("ADMIN_PASSWORD", "admin123")
+    if password != admin_password:
+        raise HTTPException(status_code=401, detail="Mot de passe incorrect")
+    return {"access_token": create_access_token(), "token_type": "bearer"}
+
+
 @router.get("/stats", response_model=StatsOut)
-def get_stats(db: Session = Depends(get_db)):
+def get_stats(db: Session = Depends(get_db), _: str = Depends(get_current_admin)):
     total_orders = db.query(Order).count()
     total_revenue = db.query(func.sum(Order.total)).filter(Order.status != "annulee").scalar() or 0.0
     total_products = db.query(Product).count()
@@ -30,12 +39,11 @@ def get_stats(db: Session = Depends(get_db)):
 
 
 @router.post("/upload")
-async def upload_image(file: UploadFile = File(...)):
+async def upload_image(file: UploadFile = File(...), _: str = Depends(get_current_admin)):
     allowed_types = ["image/jpeg", "image/png", "image/webp", "image/gif"]
     if file.content_type not in allowed_types:
         raise HTTPException(status_code=400, detail="Type de fichier non supporté. Utilisez JPG, PNG, WEBP ou GIF.")
 
-    # Limite 5 MB
     contents = await file.read()
     if len(contents) > 5 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="Fichier trop volumineux. Maximum 5 MB.")

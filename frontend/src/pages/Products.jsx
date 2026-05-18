@@ -12,6 +12,7 @@ export default function Products() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
 
   const activeCategory = searchParams.get("category") || ALL;
@@ -20,18 +21,21 @@ export default function Products() {
 
   const fetchProducts = useCallback(() => {
     setLoading(true);
+    setError(null);
     const params = {};
     if (activeCategory && activeCategory !== ALL) params.category = activeCategory;
     if (search) params.search = search;
 
     getProducts(params)
       .then((res) => setProducts(res.data))
-      .catch(console.error)
+      .catch((err) => setError(err?.response?.data?.detail || "Impossible de charger les produits. Vérifiez que le serveur est démarré."))
       .finally(() => setLoading(false));
   }, [activeCategory, search]);
 
   useEffect(() => {
-    getCategories().then((res) => setCategories([ALL, ...res.data]));
+    getCategories()
+      .then((res) => setCategories([ALL, ...res.data]))
+      .catch(() => setCategories([ALL]));
   }, []);
 
   useEffect(() => {
@@ -199,6 +203,15 @@ export default function Products() {
                 {[...Array(8)].map((_, i) => (
                   <div key={i} className="aspect-[3/4] bg-gray-100 animate-pulse" />
                 ))}
+              </div>
+            ) : error ? (
+              <div className="text-center py-20">
+                <p className="text-4xl mb-4">⚠️</p>
+                <p className="font-serif text-xl text-dasha-black mb-2">Erreur de chargement</p>
+                <p className="text-sm text-red-500 mb-6">{error}</p>
+                <button onClick={fetchProducts} className="btn-outline">
+                  Réessayer
+                </button>
               </div>
             ) : products.length === 0 ? (
               <div className="text-center py-20">

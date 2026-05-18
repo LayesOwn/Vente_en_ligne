@@ -1,5 +1,5 @@
-import { Outlet, Link, useLocation, Navigate } from "react-router-dom";
-import { LayoutDashboard, Package, ShoppingCart, ArrowLeft, Menu, X } from "lucide-react";
+import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
+import { LayoutDashboard, Package, ShoppingCart, ArrowLeft, Menu, X, LogOut } from "lucide-react";
 import { useState } from "react";
 
 const NAV = [
@@ -10,7 +10,13 @@ const NAV = [
 
 export default function AdminLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  function handleLogout() {
+    localStorage.removeItem("admin_token");
+    navigate("/admin/login");
+  }
 
   const isActive = (to, exact) => {
     if (exact) return location.pathname === to;
@@ -46,13 +52,19 @@ export default function AdminLayout() {
         ))}
       </nav>
 
-      <div className="px-6 py-4 border-t border-gray-800">
+      <div className="px-6 py-4 border-t border-gray-800 space-y-2">
         <Link
           to="/"
           className="flex items-center gap-2 text-xs text-gray-500 hover:text-white transition-colors"
         >
           <ArrowLeft size={14} /> Retour à la boutique
         </Link>
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 text-xs text-gray-500 hover:text-red-400 transition-colors w-full"
+        >
+          <LogOut size={14} /> Se déconnecter
+        </button>
       </div>
     </div>
   );

@@ -37,7 +37,7 @@ PRODUCTS = [
     },
     {
         "name": "Mini Jupe Plissée Noir",
-        "description": "Mini jupe plissée élégante, style moderne et féminin.",
+        "description": "Mini jupe plissée élégante, style moderne et raffiné.",
         "price": 18000,
         "stock": 20,
         "category": "Vêtements",
