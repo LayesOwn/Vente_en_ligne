@@ -96,6 +96,8 @@ class ShopProfileOut(BaseModel):
     facebook: Optional[str] = None
     instagram: Optional[str] = None
     tiktok: Optional[str] = None
+    logo: Optional[str] = None
+    about: Optional[str] = None
 
     model_config = {"from_attributes": True}
 
@@ -106,3 +108,5 @@ class ShopProfileUpdate(BaseModel):
     facebook: Optional[str] = None
     instagram: Optional[str] = None
     tiktok: Optional[str] = None
+    logo: Optional[str] = None
+    about: Optional[str] = None

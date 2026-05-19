@@ -60,3 +60,5 @@ class ShopProfile(Base):
     facebook = Column(String(300), nullable=True)
     instagram = Column(String(300), nullable=True)
     tiktok = Column(String(300), nullable=True)
+    logo = Column(String(500), nullable=True)
+    about = Column(Text, nullable=True)

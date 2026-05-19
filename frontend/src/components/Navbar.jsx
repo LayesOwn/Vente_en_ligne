@@ -3,9 +3,11 @@ import { Link, useLocation } from "react-router-dom";
 import { ShoppingBag, Menu, X, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "../context/CartContext";
+import { useProfile } from "../context/ProfileContext";
 
 export default function Navbar() {
   const { cartCount, setIsCartOpen } = useCart();
+  const profile = useProfile();
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
 
@@ -24,10 +26,18 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <Link to="/" className="flex-shrink-0">
-            <span className="flex flex-col leading-none">
-              <span className="text-xl md:text-2xl font-serif font-normal tracking-[0.12em] text-dasha-black">Dash-Design</span>
-              <span className="text-xs font-serif tracking-[0.35em] text-rose-powder text-center">SHOP</span>
-            </span>
+            {profile?.logo ? (
+              <img
+                src={profile.logo}
+                alt="Logo boutique"
+                className="h-12 md:h-14 w-auto object-contain"
+              />
+            ) : (
+              <span className="flex flex-col leading-none">
+                <span className="text-xl md:text-2xl font-serif font-normal tracking-[0.12em] text-dasha-black">Dash-Design</span>
+                <span className="text-xs font-serif tracking-[0.35em] text-rose-powder text-center">SHOP</span>
+              </span>
+            )}
           </Link>
 
           {/* Nav desktop */}

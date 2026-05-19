@@ -50,13 +50,20 @@ export default function Footer() {
 
           {/* Brand + réseaux sociaux */}
           <div>
-            <div className="flex flex-col leading-none mb-4">
-              <span className="text-2xl font-serif tracking-[0.12em]">Dash-Design</span>
-              <span className="text-sm font-serif tracking-[0.35em] text-rose-powder">SHOP</span>
-            </div>
+            {profile?.logo ? (
+              <img
+                src={profile.logo}
+                alt="Logo boutique"
+                className="h-20 w-auto object-contain mb-4 brightness-0 invert"
+              />
+            ) : (
+              <div className="flex flex-col leading-none mb-4">
+                <span className="text-2xl font-serif tracking-[0.12em]">Dash-Design</span>
+                <span className="text-sm font-serif tracking-[0.35em] text-rose-powder">SHOP</span>
+              </div>
+            )}
             <p className="text-sm text-gray-400 leading-relaxed mb-6">
-              Mode et accessoires pour tous les styles. Élégance, modernité et
-              raffinement au quotidien.
+              {profile?.about || "Mode et accessoires pour tous les styles. Élégance, modernité et raffinement au quotidien."}
             </p>
             {socials.length > 0 && (
               <div className="flex items-center gap-3">
