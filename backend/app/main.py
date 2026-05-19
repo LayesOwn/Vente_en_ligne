@@ -20,10 +20,24 @@ if not os.getenv("SECRET_KEY"):
 if _IS_PROD and len(os.getenv("SECRET_KEY", "")) < 32:
     _log.error("SECRET_KEY trop courte pour la production (minimum 32 caractères). Générez-en une avec : python -c \"import secrets; print(secrets.token_hex(32))\"")
 
+from sqlalchemy import text
 from .database import engine, Base
 from .routers import products, orders, admin
 
 Base.metadata.create_all(bind=engine)
+
+# ── Migrations colonnes manquantes (idempotent) ────────────────────────────────
+_MIGRATIONS = [
+    "ALTER TABLE shop_profile ADD COLUMN logo VARCHAR(500)",
+    "ALTER TABLE shop_profile ADD COLUMN about TEXT",
+]
+with engine.connect() as _conn:
+    for _sql in _MIGRATIONS:
+        try:
+            _conn.execute(text(_sql))
+            _conn.commit()
+        except Exception:
+            pass  # colonne déjà présente
 
 # ── Application ────────────────────────────────────────────────────────────────
 app = FastAPI(
