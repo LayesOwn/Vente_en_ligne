@@ -1,11 +1,10 @@
 import os
 import logging
 import pathlib
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
-from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -37,18 +36,34 @@ app = FastAPI(
     openapi_url=None if _IS_PROD else "/api/openapi.json",
 )
 
-# ── Middleware : en-têtes de sécurité HTTP ─────────────────────────────────────
-class SecurityHeadersMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        response = await call_next(request)
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["X-Frame-Options"] = "DENY"
-        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        response.headers["Permissions-Policy"] = "geolocation=(), microphone=()"
-        if _IS_PROD:
-            # HSTS : forcer HTTPS pendant 1 an
-            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-        return response
+# ── Middleware : en-têtes de sécurité HTTP (ASGI pur, compatible a2wsgi) ───────
+_SECURITY_HEADERS = [
+    (b"x-content-type-options", b"nosniff"),
+    (b"x-frame-options", b"DENY"),
+    (b"referrer-policy", b"strict-origin-when-cross-origin"),
+    (b"permissions-policy", b"geolocation=(), microphone=()"),
+]
+if _IS_PROD:
+    _SECURITY_HEADERS.append(
+        (b"strict-transport-security", b"max-age=31536000; includeSubDomains")
+    )
+
+class SecurityHeadersMiddleware:
+    def __init__(self, app, **kwargs):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        async def send_with_headers(message):
+            if message["type"] == "http.response.start":
+                headers = list(message.get("headers", [])) + _SECURITY_HEADERS
+                message = {**message, "headers": headers}
+            await send(message)
+
+        await self.app(scope, receive, send_with_headers)
 
 app.add_middleware(SecurityHeadersMiddleware)
 
