@@ -10,7 +10,7 @@ from ..utils.auth import get_current_admin
 router = APIRouter(prefix="/api/products", tags=["products"])
 
 
-@router.get("/", response_model=List[ProductOut])
+@router.get("", response_model=List[ProductOut])
 def get_products(
     category: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
@@ -45,7 +45,7 @@ def get_product(product_id: int, db: Session = Depends(get_db)):
     return product
 
 
-@router.post("/", response_model=ProductOut, status_code=201)
+@router.post("", response_model=ProductOut, status_code=201)
 def create_product(product: ProductCreate, db: Session = Depends(get_db), _: str = Depends(get_current_admin)):
     db_product = Product(**product.model_dump())
     db.add(db_product)

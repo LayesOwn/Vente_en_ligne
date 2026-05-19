@@ -14,7 +14,7 @@ from ..utils.auth import get_current_admin
 router = APIRouter(prefix="/api/orders", tags=["orders"])
 
 
-@router.post("/", response_model=OrderOut, status_code=201)
+@router.post("", response_model=OrderOut, status_code=201)
 async def create_order(order: OrderCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     # Valider le stock et charger les produits en une seule passe
     products: dict[int, Product] = {}
@@ -64,7 +64,7 @@ async def create_order(order: OrderCreate, background_tasks: BackgroundTasks, db
     return db_order
 
 
-@router.get("/", response_model=List[OrderOut])
+@router.get("", response_model=List[OrderOut])
 def get_orders(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), _: str = Depends(get_current_admin)):
     return db.query(Order).order_by(Order.created_at.desc()).offset(skip).limit(limit).all()
 
