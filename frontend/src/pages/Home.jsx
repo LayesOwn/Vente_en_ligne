@@ -46,7 +46,7 @@ export default function Home() {
         <div className="absolute inset-0">
           <img
             src="https://images.unsplash.com/photo-1558171813-2f253e0eeb44?w=1400"
-            alt="DASHA SHOP Hero"
+            alt="Dash-Design SHOP Hero"
             className="w-full h-full object-cover object-top opacity-40"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-white/80 via-white/50 to-transparent" />

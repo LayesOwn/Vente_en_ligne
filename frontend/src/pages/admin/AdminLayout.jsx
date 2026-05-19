@@ -28,8 +28,9 @@ export default function AdminLayout() {
     <div className="flex flex-col h-full">
       <div className="px-6 py-6 border-b border-gray-800">
         <Link to="/" className="block">
-          <span className="text-xl font-serif tracking-[0.12em] text-white">
-            DASHA<span className="text-rose-powder ml-1">SHOP</span>
+          <span className="flex flex-col leading-none">
+            <span className="text-lg font-serif tracking-[0.1em] text-white">Dash-Design</span>
+            <span className="text-xs font-serif tracking-[0.3em] text-rose-powder">SHOP</span>
           </span>
         </Link>
         <p className="text-xs text-gray-500 mt-1 tracking-wider">Administration</p>
@@ -99,7 +100,7 @@ export default function AdminLayout() {
           <button onClick={() => setSidebarOpen(true)} className="text-white">
             <Menu size={22} />
           </button>
-          <span className="text-sm font-serif text-white tracking-wider">DASHA SHOP Admin</span>
+          <span className="text-sm font-serif text-white tracking-wider">Dash-Design SHOP</span>
           <div className="w-8" />
         </header>
 

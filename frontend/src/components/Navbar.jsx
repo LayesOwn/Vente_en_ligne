@@ -24,9 +24,9 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <Link to="/" className="flex-shrink-0">
-            <span className="text-2xl md:text-3xl font-serif font-normal tracking-[0.15em] text-dasha-black">
-              DASHA
-              <span className="text-rose-powder ml-1">SHOP</span>
+            <span className="flex flex-col leading-none">
+              <span className="text-xl md:text-2xl font-serif font-normal tracking-[0.12em] text-dasha-black">Dash-Design</span>
+              <span className="text-xs font-serif tracking-[0.35em] text-rose-powder text-center">SHOP</span>
             </span>
           </Link>
 

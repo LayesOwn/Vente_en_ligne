@@ -26,7 +26,10 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F5F0E8]">
       <div className="bg-white rounded-2xl shadow-lg p-10 w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-center text-[#1A1A1A] mb-1">DASHA SHOP</h1>
+        <h1 className="flex flex-col items-center leading-none mb-1">
+          <span className="text-2xl font-bold text-[#1A1A1A] tracking-[0.1em]">Dash-Design</span>
+          <span className="text-sm font-semibold tracking-[0.35em] text-[#F4B8C1]">SHOP</span>
+        </h1>
         <p className="text-center text-[#F4B8C1] text-sm mb-8">Espace administration</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">

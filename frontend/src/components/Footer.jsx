@@ -57,9 +57,10 @@ export default function Footer() {
 
           {/* Brand + réseaux sociaux */}
           <div>
-            <h2 className="text-2xl font-serif tracking-[0.15em] mb-4">
-              DASHA<span className="text-rose-powder ml-1">SHOP</span>
-            </h2>
+            <div className="flex flex-col leading-none mb-4">
+              <span className="text-2xl font-serif tracking-[0.12em]">Dash-Design</span>
+              <span className="text-sm font-serif tracking-[0.35em] text-rose-powder">SHOP</span>
+            </div>
             <p className="text-sm text-gray-400 leading-relaxed mb-6">
               Mode et accessoires pour tous les styles. Élégance, modernité et
               raffinement au quotidien.
@@ -151,7 +152,7 @@ export default function Footer() {
 
         <div className="border-t border-white/10 mt-12 pt-6 flex flex-col md:flex-row items-center justify-between gap-3">
           <p className="text-xs text-gray-500">
-            © {new Date().getFullYear()} DASHA SHOP — Tous droits réservés
+            © {new Date().getFullYear()} Dash-Design SHOP — Tous droits réservés
           </p>
           <Link
             to="/admin"
