@@ -1,12 +1,27 @@
+import logging
 import os
 from datetime import datetime, timedelta
-from jose import JWTError, jwt
+
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import JWTError, jwt
+
+_log = logging.getLogger("dasha")
 
 SECRET_KEY = os.getenv("SECRET_KEY", "dasha-shop-secret-key-change-in-production")
 ALGORITHM = "HS256"
 TOKEN_EXPIRE_HOURS = 24
+
+_IS_PROD = os.getenv("ENVIRONMENT", "").lower() == "production"
+
+if _IS_PROD and (
+    SECRET_KEY == "dasha-shop-secret-key-change-in-production"
+    or len(SECRET_KEY) < 32
+):
+    _log.critical(
+        "SECRET_KEY invalide en production ! "
+        "Générez-en une avec : python -c \"import secrets; print(secrets.token_hex(32))\""
+    )
 
 _security = HTTPBearer()
 
@@ -22,4 +37,6 @@ def get_current_admin(credentials: HTTPAuthorizationCredentials = Depends(_secur
         if payload.get("sub") != "admin":
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalide")
     except JWTError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalide ou expiré")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalide ou expiré"
+        )

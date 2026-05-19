@@ -1,7 +1,11 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Text
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 from .database import Base
+
+
+def _now():
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 class Product(Base):
@@ -14,7 +18,7 @@ class Product(Base):
     stock = Column(Integer, default=0)
     category = Column(String(100), nullable=False)
     image = Column(String(500), nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=_now)
 
     order_items = relationship("OrderItem", back_populates="product")
 
@@ -29,7 +33,7 @@ class Order(Base):
     payment_method = Column(String(50), nullable=False)
     total = Column(Float, nullable=False)
     status = Column(String(50), default="en_attente")
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=_now)
 
     items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
 

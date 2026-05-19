@@ -216,7 +216,7 @@ export default function Checkout() {
                 {cart.map((item) => (
                   <li key={item.id} className="flex gap-3">
                     <img
-                      src={item.image || "https://via.placeholder.com/60x60"}
+                      src={item.image || "/placeholder.svg"}
                       alt={item.name}
                       className="w-14 h-14 object-cover bg-beige-100 flex-shrink-0"
                     />
