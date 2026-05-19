@@ -86,3 +86,23 @@ class StatsOut(BaseModel):
     total_revenue: float
     total_products: int
     pending_orders: int
+
+
+# ─── Shop Profile Schema ───────────────────────────────────────────────────────
+
+class ShopProfileOut(BaseModel):
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    facebook: Optional[str] = None
+    instagram: Optional[str] = None
+    tiktok: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
+class ShopProfileUpdate(BaseModel):
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    facebook: Optional[str] = None
+    instagram: Optional[str] = None
+    tiktok: Optional[str] = None

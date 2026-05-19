@@ -43,6 +43,8 @@ export const getInvoiceUrl = (id) => `/api/orders/${id}/invoice`;
 
 // ─── Admin ─────────────────────────────────────────────────────────────────────
 export const getStats = () => api.get("/admin/stats");
+export const getProfile = () => api.get("/admin/profile");
+export const updateProfile = (data) => api.put("/admin/profile", data);
 export const uploadImage = (file) => {
   const form = new FormData();
   form.append("file", file);

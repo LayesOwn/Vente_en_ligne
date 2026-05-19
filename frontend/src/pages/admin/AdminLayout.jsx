@@ -1,11 +1,12 @@
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Package, ShoppingCart, ArrowLeft, Menu, X, LogOut } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, ArrowLeft, Menu, X, LogOut, UserCircle } from "lucide-react";
 import { useState } from "react";
 
 const NAV = [
   { to: "/admin", label: "Dashboard", icon: <LayoutDashboard size={18} />, exact: true },
   { to: "/admin/produits", label: "Produits", icon: <Package size={18} /> },
   { to: "/admin/commandes", label: "Commandes", icon: <ShoppingCart size={18} /> },
+  { to: "/admin/profil", label: "Profil boutique", icon: <UserCircle size={18} /> },
 ];
 
 export default function AdminLayout() {

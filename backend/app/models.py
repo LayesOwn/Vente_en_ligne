@@ -49,3 +49,14 @@ class OrderItem(Base):
 
     order = relationship("Order", back_populates="items")
     product = relationship("Product", back_populates="order_items")
+
+
+class ShopProfile(Base):
+    __tablename__ = "shop_profile"
+
+    id = Column(Integer, primary_key=True, default=1)
+    email = Column(String(200), nullable=True)
+    phone = Column(String(50), nullable=True)
+    facebook = Column(String(300), nullable=True)
+    instagram = Column(String(300), nullable=True)
+    tiktok = Column(String(300), nullable=True)

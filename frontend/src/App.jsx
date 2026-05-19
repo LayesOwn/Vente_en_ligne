@@ -15,6 +15,7 @@ import Dashboard from "./pages/admin/Dashboard";
 import AdminProducts from "./pages/admin/AdminProducts";
 import AddEditProduct from "./pages/admin/AddEditProduct";
 import AdminOrders from "./pages/admin/AdminOrders";
+import AdminProfile from "./pages/admin/AdminProfile";
 
 function ShopLayout({ children }) {
   return (
@@ -89,6 +90,7 @@ export default function App() {
             <Route path="produits/nouveau" element={<AddEditProduct />} />
             <Route path="produits/:id/modifier" element={<AddEditProduct />} />
             <Route path="commandes" element={<AdminOrders />} />
+            <Route path="profil" element={<AdminProfile />} />
           </Route>
         </Routes>
       </BrowserRouter>

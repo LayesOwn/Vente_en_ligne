@@ -1,22 +1,55 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Instagram, Facebook, Twitter, Youtube, Mail, Phone, MapPin } from "lucide-react";
+import { Instagram, Facebook, Mail, Phone, MapPin } from "lucide-react";
+import { getProfile } from "../api";
 
-// ── Réseaux sociaux — à compléter par Aida ──────────────────────────────────
-const SOCIALS = [
-  { icon: <Instagram size={18} />, label: "Instagram", href: "#" },
-  { icon: <Facebook  size={18} />, label: "Facebook",  href: "#" },
-  { icon: <Twitter   size={18} />, label: "Twitter",   href: "#" },
-  { icon: <Youtube   size={18} />, label: "YouTube",   href: "#" },
-];
-
-// ── Informations de contact — à compléter par Aida ──────────────────────────
-const CONTACT = [
-  { icon: <Mail    size={14} />, label: "votre@email.com",      href: "mailto:votre@email.com" },
-  { icon: <Phone   size={14} />, label: "+221 XX XXX XX XX",    href: "tel:+221XXXXXXXXX" },
-  { icon: <MapPin  size={14} />, label: "Dakar, Sénégal",       href: null },
-];
+const TikTokIcon = () => (
+  <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.76a4.85 4.85 0 0 1-1.01-.07z" />
+  </svg>
+);
 
 export default function Footer() {
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    getProfile()
+      .then((res) => setProfile(res.data))
+      .catch(() => {});
+  }, []);
+
+  const socials = [
+    profile?.instagram && {
+      icon: <Instagram size={18} />,
+      label: "Instagram",
+      href: profile.instagram,
+    },
+    profile?.facebook && {
+      icon: <Facebook size={18} />,
+      label: "Facebook",
+      href: profile.facebook,
+    },
+    profile?.tiktok && {
+      icon: <TikTokIcon />,
+      label: "TikTok",
+      href: profile.tiktok,
+    },
+  ].filter(Boolean);
+
+  const contacts = [
+    profile?.email && {
+      icon: <Mail size={14} />,
+      label: profile.email,
+      href: `mailto:${profile.email}`,
+    },
+    profile?.phone && {
+      icon: <Phone size={14} />,
+      label: profile.phone,
+      href: `tel:${profile.phone.replace(/\s/g, "")}`,
+    },
+    { icon: <MapPin size={14} />, label: "Dakar, Sénégal", href: null },
+  ].filter(Boolean);
+
   return (
     <footer className="bg-dasha-black text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
@@ -31,20 +64,22 @@ export default function Footer() {
               Mode et accessoires pour tous les styles. Élégance, modernité et
               raffinement au quotidien.
             </p>
-            <div className="flex items-center gap-3">
-              {SOCIALS.map(({ icon, label, href }) => (
-                <a
-                  key={label}
-                  href={href}
-                  aria-label={label}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center text-gray-400 hover:text-white hover:border-white/50 transition-colors"
-                >
-                  {icon}
-                </a>
-              ))}
-            </div>
+            {socials.length > 0 && (
+              <div className="flex items-center gap-3">
+                {socials.map(({ icon, label, href }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    aria-label={label}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center text-gray-400 hover:text-white hover:border-white/50 transition-colors"
+                  >
+                    {icon}
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Collections */}
@@ -72,7 +107,7 @@ export default function Footer() {
               Contact
             </h3>
             <ul className="space-y-3">
-              {CONTACT.map(({ icon, label, href }) => (
+              {contacts.map(({ icon, label, href }) => (
                 <li key={label}>
                   {href ? (
                     <a

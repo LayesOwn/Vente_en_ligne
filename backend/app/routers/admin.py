@@ -10,8 +10,8 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..models import Order, Product
-from ..schemas import StatsOut
+from ..models import Order, Product, ShopProfile
+from ..schemas import StatsOut, ShopProfileOut, ShopProfileUpdate
 from ..utils.auth import create_access_token, get_current_admin
 from ..utils.security import login_limiter
 
@@ -105,3 +105,24 @@ async def upload_image(file: UploadFile = File(...), _: str = Depends(get_curren
         await f.write(contents)
 
     return {"url": f"/uploads/{filename}", "filename": filename}
+
+
+@router.get("/profile", response_model=ShopProfileOut)
+def get_profile(db: Session = Depends(get_db)):
+    profile = db.query(ShopProfile).filter(ShopProfile.id == 1).first()
+    if not profile:
+        return ShopProfileOut()
+    return profile
+
+
+@router.put("/profile", response_model=ShopProfileOut)
+def update_profile(data: ShopProfileUpdate, db: Session = Depends(get_db), _: str = Depends(get_current_admin)):
+    profile = db.query(ShopProfile).filter(ShopProfile.id == 1).first()
+    if not profile:
+        profile = ShopProfile(id=1)
+        db.add(profile)
+    for field, value in data.model_dump(exclude_unset=True).items():
+        setattr(profile, field, value)
+    db.commit()
+    db.refresh(profile)
+    return profile
