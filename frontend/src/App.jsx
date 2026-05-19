@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "./context/CartContext";
+import { ProfileProvider } from "./context/ProfileContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import CartDrawer from "./components/CartDrawer";
@@ -30,6 +31,7 @@ function ShopLayout({ children }) {
 
 export default function App() {
   return (
+    <ProfileProvider>
     <CartProvider>
       <BrowserRouter>
         <Routes>
@@ -95,5 +97,6 @@ export default function App() {
         </Routes>
       </BrowserRouter>
     </CartProvider>
+    </ProfileProvider>
   );
 }

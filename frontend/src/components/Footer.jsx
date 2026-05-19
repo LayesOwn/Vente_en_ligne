@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Instagram, Facebook, Mail, Phone, MapPin } from "lucide-react";
-import { getProfile } from "../api";
+import { useProfile } from "../context/ProfileContext";
 
 const TikTokIcon = () => (
   <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
@@ -10,13 +9,7 @@ const TikTokIcon = () => (
 );
 
 export default function Footer() {
-  const [profile, setProfile] = useState(null);
-
-  useEffect(() => {
-    getProfile()
-      .then((res) => setProfile(res.data))
-      .catch(() => {});
-  }, []);
+  const profile = useProfile();
 
   const socials = [
     profile?.instagram && {
