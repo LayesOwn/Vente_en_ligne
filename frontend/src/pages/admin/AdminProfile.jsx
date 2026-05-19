@@ -108,8 +108,17 @@ export default function AdminProfile() {
     try {
       await updateProfile(form);
       setSuccess(true);
-    } catch {
-      setError("Erreur lors de l'enregistrement. Réessayez.");
+    } catch (err) {
+      const detail = err?.response?.data?.detail;
+      const status = err?.response?.status;
+      if (Array.isArray(detail)) {
+        setError(`Erreur de validation (${status}) : ${detail.map(d => d.msg).join(", ")}`);
+      } else if (typeof detail === "string") {
+        setError(`Erreur ${status} : ${detail}`);
+      } else {
+        setError(`Erreur ${status ?? "réseau"} — vérifiez les logs du serveur.`);
+      }
+      console.error("updateProfile error:", err?.response ?? err);
     } finally {
       setSaving(false);
     }

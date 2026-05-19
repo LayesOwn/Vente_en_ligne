@@ -20,24 +20,26 @@ if not os.getenv("SECRET_KEY"):
 if _IS_PROD and len(os.getenv("SECRET_KEY", "")) < 32:
     _log.error("SECRET_KEY trop courte pour la production (minimum 32 caractères). Générez-en une avec : python -c \"import secrets; print(secrets.token_hex(32))\"")
 
-from sqlalchemy import text
+from sqlalchemy import text, inspect as sa_inspect
 from .database import engine, Base
 from .routers import products, orders, admin
 
 Base.metadata.create_all(bind=engine)
 
 # ── Migrations colonnes manquantes (idempotent) ────────────────────────────────
-_MIGRATIONS = [
-    "ALTER TABLE shop_profile ADD COLUMN logo VARCHAR(500)",
-    "ALTER TABLE shop_profile ADD COLUMN about TEXT",
-]
-with engine.connect() as _conn:
-    for _sql in _MIGRATIONS:
-        try:
-            _conn.execute(text(_sql))
-            _conn.commit()
-        except Exception:
-            pass  # colonne déjà présente
+_inspector = sa_inspect(engine)
+if "shop_profile" in _inspector.get_table_names():
+    _existing = {c["name"] for c in _inspector.get_columns("shop_profile")}
+    _to_add = {
+        "logo": "VARCHAR(500)",
+        "about": "TEXT",
+    }
+    with engine.connect() as _conn:
+        for _col, _type in _to_add.items():
+            if _col not in _existing:
+                _conn.execute(text(f"ALTER TABLE shop_profile ADD COLUMN {_col} {_type}"))
+                _conn.commit()
+                _log.info(f"Migration : colonne shop_profile.{_col} ajoutée")
 
 # ── Application ────────────────────────────────────────────────────────────────
 app = FastAPI(
