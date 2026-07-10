@@ -1,6 +1,8 @@
-# DASHA SHOP — Boutique E-commerce Féminine
+# Dash-Design SHOP — Boutique E-commerce
 
-Application web e-commerce complète pour la vente de vêtements, chaussures, sacs, bijoux et accessoires féminins.
+Application web e-commerce complète pour la vente de vêtements, chaussures, sacs, bijoux et accessoires. Boutique cliente + espace d'administration, avec suivi de commande, facturation PDF et notifications WhatsApp.
+
+🌐 En production : https://layesdev.pythonanywhere.com
 
 ---
 
@@ -8,10 +10,12 @@ Application web e-commerce complète pour la vente de vêtements, chaussures, sa
 
 | Couche | Technologie |
 |---|---|
-| Frontend | React 18 + Vite + TailwindCSS + Framer Motion |
+| Frontend | React 18 + Vite + TailwindCSS + Framer Motion + Axios |
 | Backend | Python FastAPI + SQLAlchemy |
-| Base de données | SQLite (migration PostgreSQL prête) |
+| Base de données | SQLite (compatible PostgreSQL) |
+| Authentification | JWT (PyJWT, HS256) |
 | PDF | ReportLab |
+| Notifications | Telegram (vendeur) + WhatsApp `wa.me` (client) |
 | Paiements | Wave, Orange Money, Paiement à la livraison |
 
 ---
@@ -22,78 +26,63 @@ Application web e-commerce complète pour la vente de vêtements, chaussures, sa
 Vente_en_ligne/
 ├── backend/
 │   ├── app/
-│   │   ├── main.py           # Point d'entrée FastAPI
-│   │   ├── database.py       # Configuration SQLAlchemy
-│   │   ├── models.py         # Modèles ORM
-│   │   ├── schemas.py        # Schémas Pydantic
+│   │   ├── main.py            # App FastAPI, middleware sécurité, migrations, SPA
+│   │   ├── database.py        # Configuration SQLAlchemy
+│   │   ├── models.py          # Modèles ORM (Product, Order, OrderItem, ShopProfile)
+│   │   ├── schemas.py         # Schémas Pydantic
 │   │   ├── routers/
-│   │   │   ├── products.py   # CRUD produits
-│   │   │   ├── orders.py     # Gestion commandes + facture PDF
-│   │   │   └── admin.py      # Stats + upload images
+│   │   │   ├── products.py    # CRUD produits
+│   │   │   ├── orders.py      # Commandes, suivi par token, facture PDF
+│   │   │   └── admin.py       # Login, stats, upload images, profil boutique
 │   │   └── utils/
-│   │       └── pdf.py        # Génération facture PDF
-│   ├── seed.py               # Données de démonstration (16 produits)
+│   │       ├── auth.py        # JWT (PyJWT)
+│   │       ├── security.py    # Rate limiting in-memory
+│   │       ├── pdf.py         # Génération facture PDF
+│   │       └── telegram.py    # Notification commande au vendeur
+│   ├── wsgi.py                # Point d'entrée PythonAnywhere (a2wsgi)
+│   ├── seed.py                # Données de démonstration
 │   ├── requirements.txt
-│   └── .env
+│   └── .env                   # Variables d'environnement (non versionné)
 ├── frontend/
 │   ├── src/
-│   │   ├── api/index.js      # Appels API centralisés
+│   │   ├── api/index.js       # Appels API centralisés (Axios)
 │   │   ├── context/
-│   │   │   └── CartContext.jsx   # Panier global (localStorage)
-│   │   ├── components/
-│   │   │   ├── Navbar.jsx
-│   │   │   ├── Footer.jsx
-│   │   │   ├── ProductCard.jsx
-│   │   │   └── CartDrawer.jsx
+│   │   │   ├── CartContext.jsx     # Panier global (localStorage)
+│   │   │   └── ProfileContext.jsx  # Profil boutique (logo, coordonnées)
+│   │   ├── components/         # Navbar, Footer, ProductCard, CartDrawer…
 │   │   ├── pages/
-│   │   │   ├── Home.jsx              # Page accueil avec hero
-│   │   │   ├── Products.jsx          # Boutique + filtres + recherche
-│   │   │   ├── ProductDetail.jsx     # Fiche produit
-│   │   │   ├── Checkout.jsx          # Formulaire commande
-│   │   │   ├── OrderConfirmation.jsx # Page de confirmation
-│   │   │   └── admin/
-│   │   │       ├── AdminLayout.jsx   # Sidebar admin
-│   │   │       ├── Dashboard.jsx     # Tableau de bord stats
-│   │   │       ├── AdminProducts.jsx # Liste + suppression produits
-│   │   │       ├── AddEditProduct.jsx# Formulaire création/édition
-│   │   │       └── AdminOrders.jsx   # Gestion commandes + statuts
+│   │   │   ├── Home.jsx, Products.jsx, ProductDetail.jsx
+│   │   │   ├── Checkout.jsx, OrderConfirmation.jsx
+│   │   │   └── admin/         # Login, Dashboard, AdminProducts, AddEditProduct,
+│   │   │                      #   AdminOrders, AdminProfile
 │   │   ├── App.jsx
 │   │   └── main.jsx
+│   ├── dist/                  # Build de production (versionné, servi par FastAPI)
 │   ├── package.json
-│   ├── vite.config.js        # Proxy vers backend :8000
-│   └── tailwind.config.js
-├── install.bat               # Script d'installation Windows
-├── start.bat                 # Script de démarrage Windows
+│   └── vite.config.js
 └── README.md
 ```
 
 ---
 
-## Installation Rapide (Windows)
+## Installation locale
 
 ### Prérequis
-- Python 3.10+
+- Python 3.10+ (3.12 recommandé — voir Déploiement)
 - Node.js 18+
 
-### Méthode automatique
-
-1. Double-cliquer sur `install.bat`
-2. Double-cliquer sur `start.bat`
-
-### Méthode manuelle
-
-**Backend :**
+### Backend
 ```bash
 cd backend
 python -m venv venv
-venv\Scripts\activate       # Windows
-source venv/bin/activate    # Linux/Mac
+venv\Scripts\activate        # Windows
+source venv/bin/activate     # Linux/Mac
 pip install -r requirements.txt
-python seed.py              # Charge les données de démonstration
+python seed.py               # (optionnel) charge des données de démo
 uvicorn app.main:app --reload --port 8000
 ```
 
-**Frontend :**
+### Frontend
 ```bash
 cd frontend
 npm install
@@ -105,140 +94,188 @@ npm run dev
 |---|---|
 | Boutique | http://localhost:5173 |
 | Admin | http://localhost:5173/admin |
-| API Docs | http://localhost:8000/api/docs |
+| API Docs (dev uniquement) | http://localhost:8000/api/docs |
 
----
-
-## API REST
-
-### Produits
-| Méthode | Endpoint | Description |
-|---|---|---|
-| GET | `/api/products` | Liste (params: `category`, `search`) |
-| GET | `/api/products/{id}` | Détail produit |
-| GET | `/api/products/categories` | Liste des catégories |
-| POST | `/api/products` | Créer un produit |
-| PUT | `/api/products/{id}` | Modifier un produit |
-| DELETE | `/api/products/{id}` | Supprimer un produit |
-
-### Commandes
-| Méthode | Endpoint | Description |
-|---|---|---|
-| POST | `/api/orders` | Créer une commande |
-| GET | `/api/orders` | Lister toutes les commandes |
-| GET | `/api/orders/{id}` | Détail commande |
-| PUT | `/api/orders/{id}/status` | Changer le statut |
-| GET | `/api/orders/{id}/invoice` | Télécharger la facture PDF |
-
-### Admin
-| Méthode | Endpoint | Description |
-|---|---|---|
-| GET | `/api/admin/stats` | Statistiques dashboard |
-| POST | `/api/admin/upload` | Upload d'image (max 5 MB) |
-
-### Statuts de commande
-- `en_attente` — nouvelle commande
-- `confirmee` — confirmée par l'admin
-- `en_livraison` — en cours de livraison
-- `livree` — livrée avec succès
-- `annulee` — annulée
-
----
-
-## Base de Données
-
-### Table `products`
-```sql
-id, name, description, price, stock, category, image, created_at
-```
-
-### Table `orders`
-```sql
-id, customer_name, phone, city, payment_method, total, status, created_at
-```
-
-### Table `order_items`
-```sql
-id, order_id, product_id, quantity, price
-```
+> En production, FastAPI sert directement le build `frontend/dist/` : tout est sur une seule origine (pas de CORS entre front et back).
 
 ---
 
 ## Variables d'Environnement
 
 Fichier `backend/.env` :
+
 ```env
+# Base de données
 DATABASE_URL=sqlite:///./dasha_shop.db
 UPLOAD_DIR=uploads
-SECRET_KEY=votre-secret-key-ici
-ADMIN_PASSWORD=admin123
+
+# Sécurité (OBLIGATOIRE en production)
+ENVIRONMENT=production                       # active le mode prod (voir ci-dessous)
+SECRET_KEY=<clé aléatoire de 64 caractères>  # min. 32 caractères
+ADMIN_PASSWORD=<mot de passe admin fort>
+
+# Frontend
+FRONTEND_URL=https://votre-domaine.com
+
+# Notifications vendeur (optionnel)
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
 ```
 
-### Migration vers PostgreSQL
+Générer une clé secrète :
+```bash
+python -c "import secrets; print(secrets.token_hex(32))"
+```
 
-Remplacer dans `.env` :
+### Comportement du mode `production`
+Quand `ENVIRONMENT=production` :
+- L'application **refuse de démarrer** si `ADMIN_PASSWORD` est absent ou si `SECRET_KEY` est par défaut / trop courte (< 32 caractères).
+- La documentation API (`/api/docs`, `/api/redoc`, `/api/openapi.json`) est désactivée.
+- L'en-tête HSTS est ajouté ; CORS est restreint à `FRONTEND_URL`.
+
+### Migration vers PostgreSQL
+Remplacer `DATABASE_URL` puis ajouter `psycopg2-binary` à `requirements.txt` :
 ```env
 DATABASE_URL=postgresql://user:password@localhost:5432/dasha_shop
 ```
-Puis ajouter `psycopg2-binary` dans `requirements.txt`.
 
 ---
 
-## Déploiement PythonAnywhere
+## API REST
 
-1. **Uploader les fichiers** via l'interface Files ou Git
+Les routes marquées 🔒 nécessitent un jeton admin (`Authorization: Bearer <token>`).
 
-2. **Installer les dépendances :**
-   ```bash
-   pip install -r requirements.txt
-   ```
+### Produits
+| Méthode | Endpoint | Accès | Description |
+|---|---|---|---|
+| GET | `/api/products` | public | Liste (params : `category`, `search`, `skip`, `limit`) |
+| GET | `/api/products/categories` | public | Liste des catégories |
+| GET | `/api/products/{id}` | public | Détail d'un produit |
+| POST | `/api/products` | 🔒 | Créer un produit |
+| PUT | `/api/products/{id}` | 🔒 | Modifier un produit |
+| DELETE | `/api/products/{id}` | 🔒 | Supprimer un produit |
 
-3. **Configurer le fichier WSGI** (`/var/www/yourusername_pythonanywhere_com_wsgi.py`) :
-   ```python
-   import sys
-   sys.path.insert(0, '/home/yourusername/Vente_en_ligne/backend')
-   
-   from app.main import app as application
-   ```
+### Commandes
+| Méthode | Endpoint | Accès | Description |
+|---|---|---|---|
+| POST | `/api/orders` | public | Créer une commande (rate-limité, total recalculé côté serveur) |
+| GET | `/api/orders` | 🔒 | Lister toutes les commandes |
+| GET | `/api/orders/track/{token}` | public | Suivi d'une commande via son jeton |
+| GET | `/api/orders/track/{token}/invoice` | public | Facture PDF via jeton |
+| GET | `/api/orders/{id}` | 🔒 | Détail d'une commande par ID |
+| PUT | `/api/orders/{id}/status` | 🔒 | Changer le statut |
 
-4. **Configurer les fichiers statiques** dans PythonAnywhere :
-   - URL: `/uploads/`
-   - Répertoire: `/home/yourusername/Vente_en_ligne/backend/uploads/`
+> Le suivi et la facture côté client utilisent un **jeton public non devinable** (`public_token`), pas l'ID séquentiel — pour éviter que les données d'un client soient accessibles en devinant les numéros.
 
-5. **Build du frontend :**
-   ```bash
-   cd frontend
-   npm run build
-   ```
-   Servir le dossier `dist/` comme site statique ou via Nginx.
+### Admin
+| Méthode | Endpoint | Accès | Description |
+|---|---|---|---|
+| POST | `/api/admin/login` | public | Connexion admin (rate-limité) → jeton JWT |
+| GET | `/api/admin/stats` | 🔒 | Statistiques du dashboard |
+| POST | `/api/admin/upload` | 🔒 | Upload d'image (max 5 Mo, validée) |
+| GET | `/api/admin/profile` | public | Profil boutique (footer public) |
+| PUT | `/api/admin/profile` | 🔒 | Modifier le profil boutique |
 
-6. **Initialiser la base :**
-   ```bash
-   cd backend
-   python seed.py
-   ```
+### Statuts de commande
+`en_attente` · `confirmee` · `en_livraison` · `livree` · `annulee`
+
+---
+
+## Base de Données
+
+### `products`
+```
+id, name, description, price, stock, category, image, created_at
+```
+
+### `orders`
+```
+id, public_token, customer_name, phone, city, payment_method, total, status, created_at
+```
+
+### `order_items`
+```
+id, order_id, product_id, quantity, price
+```
+
+### `shop_profile`
+```
+id, email, phone, facebook, instagram, tiktok, logo, about
+```
+
+> Les colonnes ajoutées après coup (`orders.public_token`, `shop_profile.logo`, `shop_profile.about`) sont créées et remplies **automatiquement au démarrage** — aucune migration manuelle nécessaire.
 
 ---
 
 ## Fonctionnalités
 
-### Boutique Client
-- Page d'accueil avec hero animé, catégories et produits vedettes
-- Liste produits avec filtrage par catégorie et recherche full-text
-- Fiche produit avec galerie, sélecteur de quantité et produits similaires
+### Boutique cliente
+- Accueil avec hero animé, catégories et produits vedettes
+- Liste produits avec filtrage par catégorie et recherche
+- Fiche produit avec quantité, produits similaires et **contact WhatsApp**
 - Panier latéral en temps réel (persisté en localStorage)
-- Formulaire de commande (nom, téléphone, ville)
-- Sélection paiement : Wave, Orange Money, Livraison
-- Page de confirmation avec récapitulatif et téléchargement de facture PDF
+- Commande (nom, téléphone, ville) + choix du paiement (Wave, Orange Money, Livraison)
+- Page de confirmation / **suivi par jeton** avec récapitulatif et téléchargement de la facture PDF
 
 ### Administration
-- Dashboard avec statistiques (CA, commandes, stock, en attente)
-- Liste produits avec gestion stock (couleur selon niveau)
-- Ajout/modification/suppression de produits
-- Upload d'images (local) ou URL externe
-- Liste des commandes avec vue détaillée dépliable
-- Changement de statut de commande en un clic
-- Téléchargement facture PDF par commande
+- Dashboard : chiffre d'affaires, commandes, stock, commandes en attente
+- Produits : liste, création, modification, suppression, upload d'image ou URL
+- Commandes : vue dépliable avec **photos des articles**, changement de statut, **facture PDF**
+- **Envoi WhatsApp au client** : message avec récapitulatif complet + statut + lien de la facture + lien de suivi
+- **Profil boutique** éditable : logo, texte « À propos », coordonnées et réseaux sociaux
+
+### Sécurité
+- Authentification admin par JWT (PyJWT, HS256), mot de passe comparé en temps constant
+- Rate limiting sur la connexion et la création de commande
+- Accès client aux commandes/factures par jeton non devinable (anti-IDOR)
+- Upload d'images validé (type, extension, taille, magic bytes via Pillow, nom aléatoire)
+- En-têtes de sécurité HTTP, protection anti path-traversal du SPA
+- Vérifications de démarrage strictes en production
+
+---
+
+## Déploiement (PythonAnywhere)
+
+L'application est déployée sur un compte gratuit PythonAnywhere. L'app FastAPI (ASGI) est adaptée en WSGI via `a2wsgi` dans `backend/wsgi.py`.
+
+### Première installation
+1. **Cloner le code** dans la console Bash :
+   ```bash
+   git clone <repo> ~/Vente_en_ligne
+   ```
+2. **Créer un virtualenv à la même version que l'app web** (onglet Web → « Python version »). Ici **Python 3.12** :
+   ```bash
+   mkvirtualenv --python=python3.12 dasha-venv
+   pip install -r ~/Vente_en_ligne/backend/requirements.txt
+   ```
+   > ⚠️ Le venv doit correspondre à la version Python de l'app web, sinon PythonAnywhere l'ignore silencieusement.
+3. **Créer `backend/.env`** avec les variables ci-dessus (`ENVIRONMENT=production`, `SECRET_KEY`, `ADMIN_PASSWORD`, `FRONTEND_URL`).
+4. **Onglet Web** :
+   - *Source code* : `/home/<user>/Vente_en_ligne/backend`
+   - *WSGI configuration file* : importe l'app depuis `backend/wsgi.py` (`application = ASGIMiddleware(app)`)
+   - *Virtualenv* : `/home/<user>/.virtualenvs/dasha-venv`
+   - *Static files* : URL `/uploads/` → `/home/<user>/Vente_en_ligne/backend/uploads`
+5. **Reload** l'app web.
+
+### Mettre à jour le projet
+```bash
+cd ~/Vente_en_ligne
+git pull origin main
+workon dasha-venv
+pip install -r backend/requirements.txt   # seulement si les dépendances ont changé
+```
+Puis onglet **Web → Reload**. Les migrations de schéma s'appliquent automatiquement au rechargement.
+
+> Le frontend est buildé et commité dans `frontend/dist/` : un simple `git pull` le met à jour. Après un déploiement, faire `Ctrl+Shift+R` dans le navigateur pour vider le cache.
+
+### Rebuild du frontend (après modification du front)
+```bash
+cd frontend
+npm run build
+git add dist && git commit -m "build" && git push
+```
+
+Log d'erreur : `/var/log/<user>.pythonanywhere.com.error.log`
 
 ---
 
@@ -250,8 +287,8 @@ Palette de couleurs :
 - **Rose poudré** — accents `#F4B8C1`
 - **Noir élégant** — titres et boutons `#1A1A1A`
 
-Typographie : Inter (sans-serif) + Georgia (serif pour les titres)
+Typographie : Inter (sans-serif) + serif pour les titres.
 
 ---
 
-Développé pour **DASHA SHOP** — Mode Féminine & Accessoires de Luxe
+Développé pour **Dash-Design SHOP** — Mode & Accessoires
