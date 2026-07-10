@@ -157,15 +157,35 @@ export default function AdminOrders() {
                       {/* Articles */}
                       {order.items && order.items.length > 0 && (
                         <div className="mb-4">
-                          <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Articles</p>
-                          <ul className="space-y-1.5">
+                          <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">
+                            Articles ({order.items.length})
+                          </p>
+                          <ul className="space-y-2">
                             {order.items.map((item) => (
-                              <li key={item.id} className="flex justify-between text-sm">
-                                <span className="text-dasha-black">
-                                  {item.product?.name || `Produit #${item.product_id}`}
-                                  <span className="text-dasha-gray ml-1">× {item.quantity}</span>
-                                </span>
-                                <span className="font-medium text-dasha-black">
+                              <li
+                                key={item.id}
+                                className="flex items-center gap-3 bg-white p-2 rounded shadow-soft"
+                              >
+                                <img
+                                  src={item.product?.image || "https://via.placeholder.com/80x80?text=IMG"}
+                                  alt={item.product?.name || "Produit"}
+                                  className="w-14 h-14 object-cover rounded flex-shrink-0 bg-beige-50"
+                                  onError={(e) => {
+                                    e.currentTarget.src = "https://via.placeholder.com/80x80?text=IMG";
+                                  }}
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-dasha-black truncate">
+                                    {item.product?.name || `Produit #${item.product_id}`}
+                                  </p>
+                                  {item.product?.category && (
+                                    <p className="text-xs text-dasha-gray">{item.product.category}</p>
+                                  )}
+                                  <p className="text-xs text-dasha-gray mt-0.5">
+                                    {item.price.toLocaleString()} FCFA × {item.quantity}
+                                  </p>
+                                </div>
+                                <span className="font-semibold text-sm text-dasha-black flex-shrink-0">
                                   {(item.price * item.quantity).toLocaleString()} FCFA
                                 </span>
                               </li>
