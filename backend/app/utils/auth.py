@@ -2,9 +2,9 @@ import logging
 import os
 from datetime import datetime, timedelta, timezone
 
+import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError, jwt
 
 _log = logging.getLogger("dasha")
 
@@ -36,7 +36,7 @@ def get_current_admin(credentials: HTTPAuthorizationCredentials = Depends(_secur
         payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
         if payload.get("sub") != "admin":
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalide")
-    except JWTError:
+    except jwt.InvalidTokenError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalide ou expiré"
         )
