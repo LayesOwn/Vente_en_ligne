@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import Response
 from sqlalchemy.orm import Session, selectinload
 from typing import List
-import io
 
 from ..database import get_db
 from ..models import Order, OrderItem, Product
@@ -120,11 +119,14 @@ def download_invoice_public(token: str, db: Session = Depends(get_db)):
     order = db.query(Order).options(_WITH_ITEMS).filter(Order.public_token == token).first()
     if not order:
         raise HTTPException(status_code=404, detail="Commande introuvable")
-    pdf_buffer = generate_invoice_pdf(order)
-    return StreamingResponse(
-        io.BytesIO(pdf_buffer),
+    pdf_bytes = generate_invoice_pdf(order)
+    # Response directe (pas de streaming) : robuste derrière a2wsgi (ASGI->WSGI)
+    return Response(
+        content=pdf_bytes,
         media_type="application/pdf",
-        headers={"Content-Disposition": f"attachment; filename=facture-DASHA-{order.id:04d}.pdf"},
+        headers={
+            "Content-Disposition": f'inline; filename="facture-DASHA-{order.id:04d}.pdf"'
+        },
     )
 
 
