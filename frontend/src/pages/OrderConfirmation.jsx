@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CheckCircle, Download, Home, ShoppingBag } from "lucide-react";
-import { getOrder, getInvoiceUrl } from "../api";
+import { trackOrder, getInvoiceUrl } from "../api";
 
 const STATUS_MAP = {
   en_attente: { label: "En attente de confirmation", color: "text-orange-500" },
@@ -19,16 +19,16 @@ const PAYMENT_MAP = {
 };
 
 export default function OrderConfirmation() {
-  const { orderId } = useParams();
+  const { orderId: token } = useParams();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getOrder(orderId)
+    trackOrder(token)
       .then((res) => setOrder(res.data))
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [orderId]);
+  }, [token]);
 
   if (loading) {
     return (
@@ -135,7 +135,7 @@ export default function OrderConfirmation() {
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
-              href={getInvoiceUrl(order.id)}
+              href={getInvoiceUrl(order.public_token)}
               target="_blank"
               rel="noopener noreferrer"
               className="btn-outline flex items-center justify-center gap-2"

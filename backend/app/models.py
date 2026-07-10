@@ -1,3 +1,4 @@
+import uuid
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
@@ -8,6 +9,10 @@ def _now():
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
+def _token():
+    return uuid.uuid4().hex
+
+
 class Product(Base):
     __tablename__ = "products"
 
@@ -16,7 +21,7 @@ class Product(Base):
     description = Column(Text, nullable=True)
     price = Column(Float, nullable=False)
     stock = Column(Integer, default=0)
-    category = Column(String(100), nullable=False)
+    category = Column(String(100), nullable=False, index=True)
     image = Column(String(500), nullable=True)
     created_at = Column(DateTime, default=_now)
 
@@ -27,12 +32,15 @@ class Order(Base):
     __tablename__ = "orders"
 
     id = Column(Integer, primary_key=True, index=True)
+    # Jeton public non devinable : sert d'identifiant pour le suivi client
+    # et la facture, sans exposer l'ID séquentiel (anti-IDOR).
+    public_token = Column(String(32), unique=True, index=True, nullable=False, default=_token)
     customer_name = Column(String(200), nullable=False)
     phone = Column(String(20), nullable=False)
     city = Column(String(100), nullable=False)
     payment_method = Column(String(50), nullable=False)
     total = Column(Float, nullable=False)
-    status = Column(String(50), default="en_attente")
+    status = Column(String(50), default="en_attente", index=True)
     created_at = Column(DateTime, default=_now)
 
     items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")

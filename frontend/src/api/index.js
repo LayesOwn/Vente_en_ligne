@@ -36,10 +36,11 @@ export const deleteProduct = (id) => api.delete(`/products/${id}`);
 // ─── Orders ────────────────────────────────────────────────────────────────────
 export const createOrder = (data) => api.post("/orders", data);
 export const getOrders = () => api.get("/orders");
-export const getOrder = (id) => api.get(`/orders/${id}`);
+// Suivi public par jeton non devinable (page de confirmation client)
+export const trackOrder = (token) => api.get(`/orders/track/${token}`);
 export const updateOrderStatus = (id, status) =>
   api.put(`/orders/${id}/status`, { status });
-export const getInvoiceUrl = (id) => `/api/orders/${id}/invoice`;
+export const getInvoiceUrl = (token) => `/api/orders/track/${token}/invoice`;
 
 // ─── Admin ─────────────────────────────────────────────────────────────────────
 export const getStats = () => api.get("/admin/stats");

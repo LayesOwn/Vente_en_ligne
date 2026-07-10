@@ -52,7 +52,7 @@ export default function Checkout() {
 
       const res = await createOrder(orderData);
       clearCart();
-      navigate(`/confirmation/${res.data.id}`);
+      navigate(`/confirmation/${res.data.public_token}`);
     } catch (err) {
       setError(
         err.response?.data?.detail || "Une erreur est survenue. Veuillez réessayer."

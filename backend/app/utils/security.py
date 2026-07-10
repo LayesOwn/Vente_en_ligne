@@ -36,3 +36,6 @@ class _SlidingWindow:
 
 # 5 tentatives de login par IP par tranche de 60 secondes
 login_limiter = _SlidingWindow(max_calls=5, window_seconds=60)
+
+# 10 commandes par IP par tranche de 60 secondes (anti-spam)
+order_limiter = _SlidingWindow(max_calls=10, window_seconds=60)

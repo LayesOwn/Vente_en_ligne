@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request
 from fastapi.responses import StreamingResponse
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from typing import List
 import io
 
@@ -10,24 +10,54 @@ from ..schemas import OrderCreate, OrderOut, OrderStatusUpdate
 from ..utils.pdf import generate_invoice_pdf
 from ..utils.telegram import send_order_notification, build_order_message
 from ..utils.auth import get_current_admin
+from ..utils.security import order_limiter
 
 router = APIRouter(prefix="/api/orders", tags=["orders"])
 
+# Chargement des relations en une requête groupée (évite le N+1)
+_WITH_ITEMS = selectinload(Order.items).selectinload(OrderItem.product)
+
 
 @router.post("", response_model=OrderOut, status_code=201)
-async def create_order(order: OrderCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
-    # Valider le stock et charger les produits en une seule passe
-    products: dict[int, Product] = {}
+async def create_order(
+    order: OrderCreate,
+    background_tasks: BackgroundTasks,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    # Anti-spam : limite le nombre de commandes par IP
+    client_ip = request.client.host if request.client else "unknown"
+    if not order_limiter.is_allowed(client_ip):
+        retry = order_limiter.retry_after(client_ip)
+        raise HTTPException(
+            status_code=429,
+            detail=f"Trop de commandes envoyées. Réessayez dans {retry} secondes.",
+            headers={"Retry-After": str(retry)},
+        )
+
+    if not order.items:
+        raise HTTPException(status_code=400, detail="La commande ne contient aucun article")
+
+    # Charger tous les produits demandés en une requête, avec verrou (anti-survente)
+    product_ids = {item.product_id for item in order.items}
+    query = db.query(Product).filter(Product.id.in_(product_ids))
+    # with_for_update verrouille les lignes jusqu'au commit (no-op sur SQLite)
+    if db.bind.dialect.name != "sqlite":
+        query = query.with_for_update()
+    products: dict[int, Product] = {p.id: p for p in query.all()}
+
+    # Valider existence et stock
     for item in order.items:
-        product = db.query(Product).filter(Product.id == item.product_id).first()
+        product = products.get(item.product_id)
         if not product:
             raise HTTPException(status_code=404, detail=f"Produit {item.product_id} introuvable")
+        if item.quantity <= 0:
+            raise HTTPException(status_code=400, detail="Quantité invalide")
         if product.stock < item.quantity:
             raise HTTPException(
                 status_code=400,
                 detail=f"Stock insuffisant pour {product.name}: {product.stock} disponible(s)",
             )
-        products[item.product_id] = product
 
     # Calculer le total côté serveur depuis les prix en base
     real_total = sum(products[item.product_id].price * item.quantity for item in order.items)
@@ -66,12 +96,42 @@ async def create_order(order: OrderCreate, background_tasks: BackgroundTasks, db
 
 @router.get("", response_model=List[OrderOut])
 def get_orders(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), _: str = Depends(get_current_admin)):
-    return db.query(Order).order_by(Order.created_at.desc()).offset(skip).limit(limit).all()
+    return (
+        db.query(Order)
+        .options(_WITH_ITEMS)
+        .order_by(Order.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
+# ── Suivi public par jeton (le client n'est pas authentifié) ───────────────────
+@router.get("/track/{token}", response_model=OrderOut)
+def track_order(token: str, db: Session = Depends(get_db)):
+    order = db.query(Order).options(_WITH_ITEMS).filter(Order.public_token == token).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Commande introuvable")
+    return order
+
+
+@router.get("/track/{token}/invoice")
+def download_invoice_public(token: str, db: Session = Depends(get_db)):
+    order = db.query(Order).options(_WITH_ITEMS).filter(Order.public_token == token).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Commande introuvable")
+    pdf_buffer = generate_invoice_pdf(order)
+    return StreamingResponse(
+        io.BytesIO(pdf_buffer),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=facture-DASHA-{order.id:04d}.pdf"},
+    )
+
+
+# ── Accès par ID réservé à l'admin (IDs séquentiels devinables) ────────────────
 @router.get("/{order_id}", response_model=OrderOut)
-def get_order(order_id: int, db: Session = Depends(get_db)):
-    order = db.query(Order).filter(Order.id == order_id).first()
+def get_order(order_id: int, db: Session = Depends(get_db), _: str = Depends(get_current_admin)):
+    order = db.query(Order).options(_WITH_ITEMS).filter(Order.id == order_id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Commande introuvable")
     return order
@@ -91,18 +151,3 @@ def update_order_status(order_id: int, status_update: OrderStatusUpdate, db: Ses
     db.commit()
     db.refresh(order)
     return order
-
-
-@router.get("/{order_id}/invoice")
-def download_invoice(order_id: int, db: Session = Depends(get_db)):
-    order = db.query(Order).filter(Order.id == order_id).first()
-    if not order:
-        raise HTTPException(status_code=404, detail="Commande introuvable")
-
-    pdf_buffer = generate_invoice_pdf(order)
-
-    return StreamingResponse(
-        io.BytesIO(pdf_buffer),
-        media_type="application/pdf",
-        headers={"Content-Disposition": f"attachment; filename=facture-DASHA-{order_id}.pdf"},
-    )

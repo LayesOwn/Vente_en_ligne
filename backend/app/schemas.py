@@ -67,6 +67,7 @@ class OrderStatusUpdate(BaseModel):
 
 class OrderOut(BaseModel):
     id: int
+    public_token: str
     customer_name: str
     phone: str
     city: str
